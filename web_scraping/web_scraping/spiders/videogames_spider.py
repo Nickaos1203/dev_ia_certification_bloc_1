@@ -4,7 +4,9 @@ import scrapy
 
 
 class VideogamesSpider(scrapy.Spider):
-    name = "videogames"
+    name= "dishe_spider"
+    allowed_domains = ["metacritic.com"]
+    start_urls = ["https://www.metacritic.com/browse/game/?releaseYearMin=2025&releaseYearMax=2026&page=" + str(x) for x in range(1, 10)]
 
     async def start(self):
         urls = [
