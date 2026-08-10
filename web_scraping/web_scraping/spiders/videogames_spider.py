@@ -1,5 +1,4 @@
 from pathlib import Path
-
 import scrapy
 
 
@@ -26,20 +25,26 @@ class VideogamesSpider(scrapy.Spider):
 
 
     def parse_videogames(self, response):
+        titre = response.css("h1.hero-title__text::text").get()
+        date = response.css("div.hero-release-date__value::text").get()
+        plateformes = response.css("li.c-product-details__section__list-item::text").getall()
+        editeur = response.css("a.c-product-detail-link::text").get()
+        genre = response.css("span.global-link-button__label::text").get()
+        description = response.css("span.text-base.leading-\\[1\\.75rem\\].text-gray-900::text").get()
+        scores = response.css('span[data-testid="global-score-value"]::text').getall()
+        score_metacritic = scores[0]
+        score_utilisateurs = scores[1]
+
+
+
+
         yield {
-            "url" : response.url
+            "url": response.url,
+            "titre": titre,
+            "plateformes": plateformes,
+            "editeur": editeur,
+            "genre": genre,
+            "description": description,
+            "score_metacritic": score_metacritic,
+            "score_utilisateurs": score_utilisateurs
         }
-
-
-        # url = ""
-        # nom = ""
-        # date = ""
-        # plateformes = ""
-        # editeur = ""
-        # genre = ""
-        # resume = ""
-        # note_metascore = ""
-        # note_utilisateur = ""
-        # pourcentage_note_positif = ""
-        # pourcentage_note_negatif = ""
-        # pourcentage_note_mixte = ""
