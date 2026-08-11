@@ -1,2 +1,5 @@
 Scrapy
 scrapy-user-agents
+python-dotenv
+psycopg2-binary
+pandas

@@ -1,3 +1,7 @@
+.env
 .venv
 ../__pycache__/
 __pycache__/
+
+# fichiers json
+videogames_dataset.json
