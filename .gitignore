@@ -5,3 +5,4 @@ __pycache__/
 
 # fichiers json
 videogames_dataset.json
+videogames_dataset_clean.json
