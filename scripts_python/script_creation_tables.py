@@ -89,6 +89,21 @@ CREATE TABLE IF NOT EXISTS users (
     is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+
+CREATE TABLE IF NOT EXISTS tree_species (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    species_scientific_name TEXT,
+    species_common_name TEXT,
+    form TEXT,
+    growth_rate TEXT,
+    fall_color TEXT,
+    environmental_tolerances TEXT,
+    location_tolerances TEXT,
+    notes_suggested_cultivars TEXT,
+    tree_size TEXT,
+    comments TEXT
+);
+
 """
 
 

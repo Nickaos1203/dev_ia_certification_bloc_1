@@ -77,6 +77,7 @@ try:
                     game.get("score_utilisateurs")
                 )
             )
+            # récupère l'id pour les prochaines relations de tables
             jeuvideo_id = cur.fetchone()[0]
 
             # Plateformes
@@ -92,6 +93,7 @@ try:
                     """,
                     (plateforme_nom,)
                 )
+                # récupère l'id pour les prochaines relations de tables
                 plateforme_id = cur.fetchone()[0]
 
                 # Relation jeu <-> plateforme
