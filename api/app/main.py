@@ -509,7 +509,7 @@ async def create_videogame(
     }
 
 
-@app.put("/jeux/update/{id}",response_model=JeuVideo)
+@app.patch("/jeux/update/{id}",response_model=JeuVideo)
 async def update_videogame(id: int, jeu: JeuVideoUpdate, current_user: str = Depends(get_current_user)):
 
     conn = psycopg2.connect(
@@ -638,7 +638,7 @@ async def update_videogame(id: int, jeu: JeuVideoUpdate, current_user: str = Dep
     }
 
 
-@app.delete("/jeux/{id}")
+@app.delete("/jeux/delete/{id}")
 async def delete_videogame(
     id: int,
     current_user: str = Depends(get_current_user)

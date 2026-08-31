@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS jeuvideo (
     score_utilisateurs NUMERIC(4,1)
 );
 
-
 CREATE TABLE IF NOT EXISTS plateforme (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nom VARCHAR(100) UNIQUE NOT NULL
@@ -46,38 +45,31 @@ CREATE TABLE IF NOT EXISTS genre (
     nom VARCHAR(100) UNIQUE NOT NULL
 );
 
-
 CREATE TABLE IF NOT EXISTS jeuvideo_plateforme (
     jeuvideo_id INTEGER NOT NULL,
     plateforme_id INTEGER NOT NULL,
 
     PRIMARY KEY (jeuvideo_id, plateforme_id),
-
     FOREIGN KEY (jeuvideo_id)
         REFERENCES jeuvideo(id)
         ON DELETE CASCADE,
-
     FOREIGN KEY (plateforme_id)
         REFERENCES plateforme(id)
         ON DELETE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS jeuvideo_genre (
     jeuvideo_id INTEGER NOT NULL,
     genre_id INTEGER NOT NULL,
 
     PRIMARY KEY (jeuvideo_id, genre_id),
-
     FOREIGN KEY (jeuvideo_id)
         REFERENCES jeuvideo(id)
         ON DELETE CASCADE,
-
     FOREIGN KEY (genre_id)
         REFERENCES genre(id)
         ON DELETE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -102,6 +94,20 @@ CREATE TABLE IF NOT EXISTS tree_species (
     notes_suggested_cultivars TEXT,
     tree_size TEXT,
     comments TEXT
+);
+
+
+CREATE TABLE IF NOT EXISTS salaries (
+    id NTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    geo VARCHAR(50),
+    sex VARCHAR(10),
+    freq VARCHAR(10),
+    time_period INTEGER,
+    dera_measure VARCHAR(100),
+    pcs_ese VARCHAR(20),
+    obs_status VARCHAR(10),
+    conf_status VARCHAR(10),
+    obs_value_niveau NUMERIC(12,2)
 );
 
 """
