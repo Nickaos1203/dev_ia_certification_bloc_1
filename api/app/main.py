@@ -7,7 +7,7 @@ from typing import List, Annotated, Optional
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.schemas import JeuVideo, Genre, Plateforme, UserCreate, UserResponse, Token, JeuVideoCreate, JeuVideoUpdate
+from app.schemas import JeuVideo, Genre, Plateforme, Tree, Salary, UserCreate, UserResponse, Token
 from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
 
 
@@ -46,10 +46,7 @@ async def read_all_videogames():
 
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    # =========================
     # Jeux vidéo
-    # =========================
-
     cursor.execute("""
         SELECT
             id,
@@ -65,10 +62,7 @@ async def read_all_videogames():
 
     jeux = cursor.fetchall()
 
-    # =========================
     # Plateformes
-    # =========================
-
     cursor.execute("""
         SELECT
             jp.jeuvideo_id AS jeu_id,
@@ -82,10 +76,7 @@ async def read_all_videogames():
 
     plateformes = cursor.fetchall()
 
-    # =========================
     # Genres
-    # =========================
-
     cursor.execute("""
         SELECT
             jg.jeuvideo_id AS jeu_id,
@@ -102,10 +93,8 @@ async def read_all_videogames():
     cursor.close()
     conn.close()
 
-    # =========================
-    # Association plateformes
-    # =========================
 
+    # Association plateformes
     plateformes_par_jeu = {}
 
     for plateforme in plateformes:
@@ -122,10 +111,8 @@ async def read_all_videogames():
             )
         )
 
-    # =========================
-    # Association genres
-    # =========================
 
+    # Association genres
     genres_par_jeu = {}
 
     for genre in genres:
@@ -142,16 +129,13 @@ async def read_all_videogames():
             )
         )
 
-    # =========================
+
     # Construction des résultats
-    # =========================
 
     result = []
 
     for jeu in jeux:
-
         jeu_id = jeu["id"]
-
         result.append(
             JeuVideo(
                 id=jeu["id"],
@@ -183,10 +167,7 @@ async def read_videogame_by_id(id:int):
         cursor_factory=RealDictCursor
     )
 
-    # -------------------------
-    # 1. Informations du jeu
-    # -------------------------
-
+    # Informations du jeu
     cursor.execute("""
         SELECT
             id,
@@ -208,10 +189,7 @@ async def read_videogame_by_id(id:int):
         return None
 
 
-    # -------------------------
-    # 2. Plateformes du jeu
-    # -------------------------
-
+    # Plateformes du jeu
     cursor.execute("""
         SELECT
             p.id,
@@ -226,10 +204,7 @@ async def read_videogame_by_id(id:int):
     plateformes = cursor.fetchall()
 
 
-    # -------------------------
-    # 3. Genres du jeu
-    # -------------------------
-
+    # Genres du jeu
     cursor.execute("""
         SELECT
             g.id,
@@ -243,25 +218,95 @@ async def read_videogame_by_id(id:int):
 
     genres = cursor.fetchall()
 
-
     cursor.close()
     conn.close()
 
 
-    # -------------------------
-    # 4. Construction du résultat
-    # -------------------------
-
+    # Construction du résultat
     jeu["plateformes"] = plateformes
     jeu["genres"] = genres
 
     return jeu
 
 
+# salaires
+@app.get("/salaries", response_model=list[Salary])
+async def salaries_list():
+    conn = psycopg2.connect(
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
 
-#---------------------
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+    SELECT 
+        id,
+        geo,
+        sex,
+        freq,
+        time_period,
+        dera_measure,
+        pcs_ese,
+        obs_status,
+        conf_status,
+        obs_value_niveau
+    FROM salaries
+    """)
+
+    salaries = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return salaries
+
+
+# salaire par id
+@app.get("/salaries/{id}", response_model=Salary)
+async def salary_by_id(id: int):
+    conn = psycopg2.connect(
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+    SELECT 
+        id,
+        geo,
+        sex,
+        freq,
+        time_period,
+        dera_measure,
+        pcs_ese,
+        obs_status,
+        conf_status,
+        obs_value_niveau
+    FROM salaries
+    WHERE id = %s
+    """, (id,))
+
+    salary = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return salary
+
+
 # authentification
-#---------------------
 @app.post("/register",response_model=UserResponse)
 async def register(user: UserCreate):
     conn = psycopg2.connect(
@@ -421,267 +466,3 @@ async def read_users_me(current_user: str = Depends(get_current_user)):
     return {
         "username": current_user
     }
-
-
-@app.post("/jeux/create",response_model=JeuVideo,status_code=201)
-async def create_videogame(
-    jeu: JeuVideoCreate,
-    current_user: str = Depends(get_current_user)
-):
-
-    conn = psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    # Création du jeu
-    cursor.execute(
-        """
-        INSERT INTO jeuvideo (
-            url,
-            titre,
-            editeur,
-            description,
-            score_metacritic,
-            score_utilisateurs
-        )
-        VALUES (%s, %s, %s, %s, %s, %s)
-        RETURNING *
-        """,
-        (
-            jeu.url,
-            jeu.titre,
-            jeu.editeur,
-            jeu.description,
-            jeu.score_metacritic,
-            jeu.score_utilisateurs
-        )
-    )
-
-    nouveau_jeu = cursor.fetchone()
-
-    jeu_id = nouveau_jeu["id"]
-
-    # Plateformes
-    for plateforme_id in jeu.plateformes:
-
-        cursor.execute(
-            """
-            INSERT INTO jeuvideo_plateforme (
-                jeuvideo_id,
-                plateforme_id
-            )
-            VALUES (%s, %s)
-            """,
-            (jeu_id, plateforme_id)
-        )
-
-    # Genres
-    for genre_id in jeu.genres:
-
-        cursor.execute(
-            """
-            INSERT INTO jeuvideo_genre (
-                jeuvideo_id,
-                genre_id
-            )
-            VALUES (%s, %s)
-            """,
-            (jeu_id, genre_id)
-        )
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return {
-        **nouveau_jeu,
-        "plateformes": [],
-        "genres": []
-    }
-
-
-@app.patch("/jeux/update/{id}",response_model=JeuVideo)
-async def update_videogame(id: int, jeu: JeuVideoUpdate, current_user: str = Depends(get_current_user)):
-
-    conn = psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    cursor.execute(
-        """
-        SELECT *
-        FROM jeuvideo
-        WHERE id = %s
-        """,
-        (id,)
-    )
-
-    existing_game = cursor.fetchone()
-
-    if existing_game is None:
-
-        cursor.close()
-        conn.close()
-
-        raise HTTPException(
-            status_code=404,
-            detail="Jeu vidéo introuvable"
-        )
-
-    # Mise à jour des informations principales
-    cursor.execute(
-        """
-        UPDATE jeuvideo
-        SET
-            url = COALESCE(%s, url),
-            titre = COALESCE(%s, titre),
-            editeur = COALESCE(%s, editeur),
-            description = COALESCE(%s, description),
-            score_metacritic = COALESCE(
-                %s,
-                score_metacritic
-            ),
-            score_utilisateurs = COALESCE(
-                %s,
-                score_utilisateurs
-            )
-        WHERE id = %s
-        RETURNING *
-        """,
-        (
-            jeu.url,
-            jeu.titre,
-            jeu.editeur,
-            jeu.description,
-            jeu.score_metacritic,
-            jeu.score_utilisateurs,
-            id
-        )
-    )
-
-    updated_game = cursor.fetchone()
-
-    # Plateformes
-    if jeu.plateformes is not None:
-
-        cursor.execute(
-            """
-            DELETE FROM jeuvideo_plateforme
-            WHERE jeuvideo_id = %s
-            """,
-            (id,)
-        )
-
-        for plateforme_id in jeu.plateformes:
-
-            cursor.execute(
-                """
-                INSERT INTO jeuvideo_plateforme (
-                    jeuvideo_id,
-                    plateforme_id
-                )
-                VALUES (%s, %s)
-                """,
-                (id, plateforme_id)
-            )
-
-    # Genres
-    if jeu.genres is not None:
-
-        cursor.execute(
-            """
-            DELETE FROM jeuvideo_genre
-            WHERE jeuvideo_id = %s
-            """,
-            (id,)
-        )
-
-        for genre_id in jeu.genres:
-
-            cursor.execute(
-                """
-                INSERT INTO jeuvideo_genre (
-                    jeuvideo_id,
-                    genre_id
-                )
-                VALUES (%s, %s)
-                """,
-                (id, genre_id)
-            )
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return {
-        **updated_game,
-        "plateformes": [],
-        "genres": []
-    }
-
-
-@app.delete("/jeux/delete/{id}")
-async def delete_videogame(
-    id: int,
-    current_user: str = Depends(get_current_user)
-):
-
-    conn = psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
-
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        DELETE FROM jeuvideo
-        WHERE id = %s
-        RETURNING id
-        """,
-        (id,)
-    )
-
-    deleted_game = cursor.fetchone()
-
-    if deleted_game is None:
-
-        cursor.close()
-        conn.close()
-
-        raise HTTPException(
-            status_code=404,
-            detail="Jeu vidéo introuvable"
-        )
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return {
-        "message": "Jeu vidéo supprimé",
-        "id": deleted_game[0]
-    }
-

@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS tree_species (
 
 
 CREATE TABLE IF NOT EXISTS salaries (
-    id NTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     geo VARCHAR(50),
     sex VARCHAR(10),
     freq VARCHAR(10),
@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS salaries (
     conf_status VARCHAR(10),
     obs_value_niveau NUMERIC(12,2)
 );
+
 
 """
 

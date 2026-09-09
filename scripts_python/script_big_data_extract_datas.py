@@ -33,11 +33,11 @@ df = client.query(query).to_dataframe()
 print(f"Nombre de lignes extraites : {len(df)}")
 
 
-# ==========================================================
+
 # 3. NETTOYAGE DES DONNÉES
 # ==========================================================
 
-# Colonnes contenant des données textuelles
+# Colonnes contenant des données
 string_columns = [
     "species_scientific_name",
     "species_common_name",

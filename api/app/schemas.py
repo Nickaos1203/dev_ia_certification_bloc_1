@@ -2,16 +2,19 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
+# plateforme de jeu vidéo
 class Plateforme(BaseModel):
     id: int
     nom: str
 
 
+# genre de jeu vidéo
 class Genre(BaseModel):
     id: int
     nom: str
 
 
+# jeux vidéo
 class JeuVideo(BaseModel):
     id: int
     url: str
@@ -24,10 +27,38 @@ class JeuVideo(BaseModel):
     genres: list[Genre] = Field(default_factory=list)
 
 
-# =========================
-# Authentification
-# =========================
+# spécimens d'arbre
+class Tree(BaseModel):
+    id: int
+    species_scientific_name: str
+    species_common_name: str
+    form: str
+    growth_rate: str
+    fall_color: str
+    environmental_tolerances: str
+    location_tolerances: str
+    notes_suggested_cultivars: str
+    tree_size: str
+    comments: str
 
+
+# salaires
+class Salary(BaseModel):
+    id: int
+    geo: str
+    sex: str
+    freq: str
+    time_period: int
+    dera_measure: str
+    pcs_ese: str
+    obs_status: str
+    conf_status: str
+    obs_value_niveau: float
+
+
+
+
+# Authentification
 class UserCreate(BaseModel):
     username: str
     email: str
@@ -50,27 +81,3 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
-# =========================
-# Jeux vidéo
-# =========================
-
-class JeuVideoCreate(BaseModel):
-    url: str
-    titre: str
-    editeur: Optional[str] = None
-    description: Optional[str] = None
-    score_metacritic: Optional[float] = None
-    score_utilisateurs: Optional[float] = None
-    plateformes: list[int] = Field(default_factory=list)
-    genres: list[int] = Field(default_factory=list)
-
-
-class JeuVideoUpdate(BaseModel):
-    url: Optional[str] = None
-    titre: Optional[str] = None
-    editeur: Optional[str] = None
-    description: Optional[str] = None
-    score_metacritic: Optional[float] = None
-    score_utilisateurs: Optional[float] = None
-    plateformes: Optional[list[int]] = None
-    genres: Optional[list[int]] = None
