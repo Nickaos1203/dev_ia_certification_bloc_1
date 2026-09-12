@@ -25,7 +25,6 @@ with open(JSON_FILE, "r", encoding="utf-8") as file:
 print(f"{len(salaries)} lignes de la table 'salaries' à importer.")
 
 
-
 # Connexion PostgreSQL
 conn = psycopg2.connect(
     database=DB_NAME,
@@ -35,14 +34,13 @@ conn = psycopg2.connect(
     port=DB_PORT
 )
 
-
-# Import
+# Import des données dans PostgreSQL
 try:
     with conn.cursor() as cur:
         for salary in salaries:
             cur.execute(
                 """
-                INSERT INTO salaries (
+                INSERT INTO salary (
                         geo,
                         sex,
                         freq,
@@ -52,16 +50,7 @@ try:
                         obs_status,
                         conf_status,
                         obs_value_niveau)
-                VALUES (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s);
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """,
                 (
                     salary.get("GEO"),

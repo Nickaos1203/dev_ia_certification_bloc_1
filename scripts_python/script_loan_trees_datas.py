@@ -59,7 +59,7 @@ try:
 
             cur.execute(
                 """
-                INSERT INTO tree_species (
+                INSERT INTO tree_specie (
                     species_scientific_name,
                     species_common_name,
                     form,

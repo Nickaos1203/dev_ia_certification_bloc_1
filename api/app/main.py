@@ -7,8 +7,8 @@ from typing import List, Annotated, Optional
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.schemas import JeuVideo, Genre, Plateforme, Tree, Salary, UserCreate, UserResponse, Token
-from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
+from schemas import JeuVideo, Genre, Plateforme, Tree, Salary, UserCreate, UserResponse, Token
+from auth import get_password_hash, verify_password, create_access_token, get_current_user
 
 
 
@@ -23,6 +23,16 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
+# fonction de connexion à la base de données
+def connexion():
+    return psycopg2.connect(
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+        )
+
 
 # Création de l'API
 app = FastAPI()
@@ -33,20 +43,15 @@ async def root():
     return {"message": "Bienvenue sur l'API !!!"}
 
 
+###################################
+# ENDPOINTS JEUX VIDEO
+###################################
+
 @app.get("/jeux", response_model=list[JeuVideo])
-async def read_all_videogames():
-
-    conn = psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
-
+async def read_all_videogames(current_user: str = Depends(get_current_user)):
+    conn = connexion()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    # Jeux vidéo
     cursor.execute("""
         SELECT
             id,
@@ -154,7 +159,7 @@ async def read_all_videogames():
 
 
 @app.get("/jeux/{id}", response_model=JeuVideo)
-async def read_videogame_by_id(id:int):
+async def read_videogame_by_id(id:int, current_user: str = Depends(get_current_user)):
     conn = psycopg2.connect(
         database=DB_NAME,
         user=DB_USER,
@@ -229,9 +234,16 @@ async def read_videogame_by_id(id:int):
     return jeu
 
 
+
+###################################
+# ENDPOINTS SALAIRES
+###################################
+
+
+
 # salaires
 @app.get("/salaries", response_model=list[Salary])
-async def salaries_list():
+async def salaries_list(current_user: str = Depends(get_current_user)):
     conn = psycopg2.connect(
         database=DB_NAME,
         user=DB_USER,
@@ -256,7 +268,7 @@ async def salaries_list():
         obs_status,
         conf_status,
         obs_value_niveau
-    FROM salaries
+    FROM salary
     """)
 
     salaries = cursor.fetchall()
@@ -269,7 +281,7 @@ async def salaries_list():
 
 # salaire par id
 @app.get("/salaries/{id}", response_model=Salary)
-async def salary_by_id(id: int):
+async def salary_by_id(id: int, current_user: str = Depends(get_current_user)):
     conn = psycopg2.connect(
         database=DB_NAME,
         user=DB_USER,
@@ -294,7 +306,7 @@ async def salary_by_id(id: int):
         obs_status,
         conf_status,
         obs_value_niveau
-    FROM salaries
+    FROM salary
     WHERE id = %s
     """, (id,))
 
@@ -304,6 +316,79 @@ async def salary_by_id(id: int):
     conn.close()
 
     return salary
+
+
+###################################
+# ENDPOINTS ARBRES
+###################################
+
+@app.get("/trees", response_model=list[Tree])
+async def trees_list(current_user: str = Depends(get_current_user)):
+    conn = connexion()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute(
+        """
+        SELECT
+            id,
+            species_scientific_name,
+            species_common_name,
+            form,
+            growth_rate,
+            fall_color,
+            environmental_tolerances,
+            location_tolerances,
+            notes_suggested_cultivars,
+            tree_size,
+            comments
+        FROM tree_specie
+        """)
+
+    trees = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return trees
+
+
+
+@app.get("/trees/{id}", response_model=Tree)
+async def trees_list(id: int, current_user: str = Depends(get_current_user)):
+    conn = connexion()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute(
+        """
+        SELECT
+            id,
+            species_scientific_name,
+            species_common_name,
+            form,
+            growth_rate,
+            fall_color,
+            environmental_tolerances,
+            location_tolerances,
+            notes_suggested_cultivars,
+            tree_size,
+            comments
+        FROM tree_specie
+        WHERE id = %s
+        """,(id,))
+
+    tree = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return tree
+
+
+###################################
+# ENDPOINTS UTILISATEUR
+###################################
 
 
 # authentification
@@ -454,15 +539,31 @@ async def login(
     }
 
 
+
 @app.post("/logout")
-async def logout(
-    current_user: str = Depends(get_current_user)):
+async def logout(current_user: str = Depends(get_current_user)):
+    """Déconnexion de l'utilisateur
+    Args:
+        current_user (str, optional): utilisateur connecté
+
+    Returns:
+        json: message de déconnexion de l'utilisateur
+    """
     return {
         "message": f"Utilisateur {current_user} déconnecté"
     }
 
+
 @app.get("/users/me")
 async def read_users_me(current_user: str = Depends(get_current_user)):
+    """Affichage des informations concernant l'utilisateur
+
+    Args:
+        current_user (str, optional): utilisateur connecté
+
+    Returns:
+        json: informations concernant l'utilisateur connecté
+    """
     return {
         "username": current_user
     }

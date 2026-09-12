@@ -2,17 +2,13 @@ from google.cloud import bigquery
 import pandas as pd
 
 
-# ==========================================================
-# 1. CONNEXION À BIGQUERY
-# ==========================================================
 
+# CONNEXION À BIGQUERY
 client = bigquery.Client()
 
 
-# ==========================================================
-# 2. EXTRACTION DE LA TABLE tree_species
-# ==========================================================
 
+# EXTRACTION DE LA TABLE tree_species
 query = """
 SELECT
     species_scientific_name,
@@ -34,8 +30,7 @@ print(f"Nombre de lignes extraites : {len(df)}")
 
 
 
-# 3. NETTOYAGE DES DONNÉES
-# ==========================================================
+# NETTOYAGE DES DONNÉES
 
 # Colonnes contenant des données
 string_columns = [
@@ -52,10 +47,7 @@ string_columns = [
 ]
 
 
-# ----------------------------------------------------------
-# 3.1 Suppression des espaces inutiles
-# ----------------------------------------------------------
-
+# Suppression des espaces inutiles
 for column in string_columns:
     df[column] = (
         df[column]
@@ -64,10 +56,7 @@ for column in string_columns:
     )
 
 
-# ----------------------------------------------------------
-# 3.2 Remplacement des chaînes vides par des valeurs nulles
-# ----------------------------------------------------------
-
+# Remplacement des chaînes vides par des valeurs nulles
 for column in string_columns:
     df[column] = df[column].replace(
         r"^\s*$",
@@ -75,36 +64,25 @@ for column in string_columns:
         regex=True
     )
 
-
-# ----------------------------------------------------------
-# 3.3 Suppression des doublons
-# ----------------------------------------------------------
-
+# Suppression des doublons
 df = df.drop_duplicates()
 
 
-# ----------------------------------------------------------
-# 3.4 Suppression des lignes sans nom scientifique
-# ----------------------------------------------------------
-
+# Suppression des lignes sans nom scientifique
 df = df.dropna(
     subset=["species_scientific_name"]
 )
 
 
-# ==========================================================
-# 4. INFORMATIONS APRÈS NETTOYAGE
-# ==========================================================
+# INFORMATIONS APRÈS NETTOYAGE
 
 print(f"Nombre de lignes après nettoyage : {len(df)}")
-
 print("\nDonnées nettoyées :")
 print(df)
 
 
-# ==========================================================
-# 5. EXPORT AU FORMAT JSON
-# ==========================================================
+
+# EXPORT AU FORMAT JSON
 
 df.to_json(
     "tree_species.json",

@@ -8,7 +8,6 @@ INPUT_FILE = Path("videogames_dataset.json")
 OUTPUT_FILE = Path("videogames_dataset_clean.json")
 
 
-# Nettoyage des textes
 def clean_text(value):
     """
     Nettoie une valeur textuelle :
@@ -32,9 +31,6 @@ def clean_text(value):
     return value if value else None
 
 
-# ============================================================
-# Nettoyage des listes
-# ============================================================
 
 def clean_list(values):
     """

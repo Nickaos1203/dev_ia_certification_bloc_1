@@ -30,16 +30,16 @@ class JeuVideo(BaseModel):
 # spécimens d'arbre
 class Tree(BaseModel):
     id: int
-    species_scientific_name: str
-    species_common_name: str
-    form: str
-    growth_rate: str
-    fall_color: str
-    environmental_tolerances: str
-    location_tolerances: str
-    notes_suggested_cultivars: str
-    tree_size: str
-    comments: str
+    species_scientific_name: Optional[str] = None
+    species_common_name: Optional[str] = None
+    form: Optional[str] = None
+    growth_rate: Optional[str] = None
+    fall_color: Optional[str] = None
+    environmental_tolerances: Optional[str] = None
+    location_tolerances: Optional[str] = None
+    notes_suggested_cultivars: Optional[str] = None
+    tree_size: Optional[str] = None
+    comments: Optional[str] = None
 
 
 # salaires
@@ -58,7 +58,7 @@ class Salary(BaseModel):
 
 
 
-# Authentification
+# Création d'un utilisateur
 class UserCreate(BaseModel):
     username: str
     email: str

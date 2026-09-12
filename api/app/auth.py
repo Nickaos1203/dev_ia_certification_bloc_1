@@ -13,9 +13,8 @@ load_dotenv()
 
 # lancer la commande "openssl rand -hex 32" sur le terminal et copier dans le fichier .env
 SECRET_KEY = os.getenv("SECRET_KEY")
-
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 
 password_hash = PasswordHash.recommended()

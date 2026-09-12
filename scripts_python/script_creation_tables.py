@@ -27,7 +27,7 @@ sql = """
 CREATE TABLE IF NOT EXISTS jeuvideo (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     url TEXT UNIQUE NOT NULL,
-    titre VARCHAR(255) NOT NULL,
+    titre VARCHAR(255) UNIQUE NOT NULL,
     editeur VARCHAR(255),
     description TEXT,
     score_metacritic NUMERIC(4,1),
@@ -82,22 +82,22 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 
-CREATE TABLE IF NOT EXISTS tree_species (
+CREATE TABLE IF NOT EXISTS tree_specie (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    species_scientific_name TEXT,
-    species_common_name TEXT,
-    form TEXT,
-    growth_rate TEXT,
-    fall_color TEXT,
-    environmental_tolerances TEXT,
-    location_tolerances TEXT,
+    species_scientific_name VARCHAR(100),
+    species_common_name VARCHAR(100),
+    form VARCHAR(100),
+    growth_rate VARCHAR(100),
+    fall_color VARCHAR(100),
+    environmental_tolerances VARCHAR(100),
+    location_tolerances VARCHAR(100),
     notes_suggested_cultivars TEXT,
     tree_size TEXT,
     comments TEXT
 );
 
 
-CREATE TABLE IF NOT EXISTS salaries (
+CREATE TABLE IF NOT EXISTS salary (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     geo VARCHAR(50),
     sex VARCHAR(10),
