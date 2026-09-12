@@ -5,10 +5,11 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import List, Annotated, Optional
 from dotenv import load_dotenv
+
 from fastapi.security import OAuth2PasswordRequestForm
 
 from schemas import JeuVideo, Genre, Plateforme, Tree, Salary, UserCreate, UserResponse, Token
-from auth import get_password_hash, verify_password, create_access_token, get_current_user
+from auth import get_password_hash, verify_password, create_access_token, get_current_user, authenticate_user, connexion
 
 
 
@@ -24,14 +25,14 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 # fonction de connexion à la base de données
-def connexion():
-    return psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-        )
+# def connexion():
+#     return psycopg2.connect(
+#         database=DB_NAME,
+#         user=DB_USER,
+#         password=DB_PASSWORD,
+#         host=DB_HOST,
+#         port=DB_PORT
+#         )
 
 
 # Création de l'API
@@ -412,8 +413,7 @@ async def register(user: UserCreate):
         FROM users
         WHERE username = %s
            OR email = %s
-        """,
-        (user.username, user.email)
+        """, (user.username, user.email)
     )
 
     existing_user = cursor.fetchone()
@@ -454,101 +454,23 @@ async def register(user: UserCreate):
     )
 
     new_user = cursor.fetchone()
-
     conn.commit()
-
     cursor.close()
     conn.close()
 
     return new_user
 
 
-@app.post("/token", response_model=Token)
+@app.post("/login")
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends()
 ):
-
-    conn = psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    cursor.execute(
-        """
-        SELECT
-            id,
-            username,
-            email,
-            password_hash,
-            is_active
-        FROM users
-        WHERE username = %s
-        """,
-        (form_data.username,)
-    )
-
-    user = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    if user is None:
-
-        raise HTTPException(
-            status_code=401,
-            detail="Username ou mot de passe incorrect",
-            headers={
-                "WWW-Authenticate": "Bearer"
-            }
-        )
-
-    if not verify_password(
-        form_data.password,
-        user["password_hash"]
-    ):
-
-        raise HTTPException(
-            status_code=401,
-            detail="Username ou mot de passe incorrect",
-            headers={
-                "WWW-Authenticate": "Bearer"
-            }
-        )
-
-    if not user["is_active"]:
-
-        raise HTTPException(
-            status_code=400,
-            detail="Utilisateur désactivé"
-        )
-
-    access_token = create_access_token(
-        user["username"]
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return await authenticate_user(form_data)
 
 
 
 @app.post("/logout")
 async def logout(current_user: str = Depends(get_current_user)):
-    """Déconnexion de l'utilisateur
-    Args:
-        current_user (str, optional): utilisateur connecté
-
-    Returns:
-        json: message de déconnexion de l'utilisateur
-    """
     return {
         "message": f"Utilisateur {current_user} déconnecté"
     }
@@ -556,14 +478,6 @@ async def logout(current_user: str = Depends(get_current_user)):
 
 @app.get("/users/me")
 async def read_users_me(current_user: str = Depends(get_current_user)):
-    """Affichage des informations concernant l'utilisateur
-
-    Args:
-        current_user (str, optional): utilisateur connecté
-
-    Returns:
-        json: informations concernant l'utilisateur connecté
-    """
     return {
         "username": current_user
     }
